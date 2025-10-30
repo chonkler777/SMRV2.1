@@ -22,6 +22,10 @@ interface ImageData {
   aspectRatio: number;
 }
 
+interface PostEditorProps {
+  cancelUploadRef?: React.RefObject<(() => void) | null>; // ✅ Changed from MutableRefObject to RefObject
+}
+
 interface Position {
   x: number;
   y: number;
@@ -51,7 +55,7 @@ type TextMode = "default" | "editor" | "spacing" | "demotivational";
 type SpacingOption = "top" | "bottom" | "both";
 type MediaType = "image" | "gif" | "video";
 
-const PostEditor: React.FC = () => {
+const PostEditor: React.FC<PostEditorProps> = ({ cancelUploadRef }) => {
   // State variables with proper TypeScript types
   const [image, setImage] = useState<ImageData | null>(null);
   const [topText, setTopText] = useState<string>("");
@@ -85,6 +89,7 @@ const PostEditor: React.FC = () => {
   const [customTexts, setCustomTexts] = useState<CustomText[]>([]);
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [combinedCanvasText, setCombinedCanvasText] = useState<string>("");
+  const cancelUploadHandler = useRef<(() => void) | null>(null);
 
   const BASE_DISPLAY_WIDTH = 400;
 
@@ -181,6 +186,16 @@ const PostEditor: React.FC = () => {
     const newCombinedText = getCombinedCanvasText();
     setCombinedCanvasText(newCombinedText);
   }, [topText, bottomText, customTexts]);
+
+  useEffect(() => {
+    if (cancelUploadRef && 'current' in cancelUploadRef) {
+      (cancelUploadRef as React.MutableRefObject<(() => void) | null>).current = () => {
+        if (cancelUploadHandler.current) {
+          cancelUploadHandler.current();
+        }
+      };
+    }
+  }, [cancelUploadRef]);
 
   // Button positioning for file upload
   const getButtonPosition = (): { top: string; right: string } => {
@@ -931,6 +946,9 @@ const PostEditor: React.FC = () => {
                 walletAddress={currentUser?.walletAddress || ""}
                 canvasText={combinedCanvasText}
                 image={image}
+                onCancelUpload={(handler) => {
+                  cancelUploadHandler.current = handler;
+                }} // ✅ Add th
               />
             </div>
           </div>

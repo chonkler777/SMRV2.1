@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { storage, db } from "@/lib/firebase";
 import { uploadBytesResumable, ref, getDownloadURL } from "firebase/storage";
 import {
@@ -37,6 +37,7 @@ interface UploadPostProps {
     displayHeight: number;
     aspectRatio: number;
   } | null;
+  onCancelUpload?: (handler: () => void) => void;
 }
 
 interface NotifyOptions {
@@ -53,6 +54,7 @@ const UploadPost: React.FC<UploadPostProps> = ({
   walletAddress,
   canvasText,
   image,
+  onCancelUpload, // ✅ Receive callback
 }) => {
   const { currentUser }: { currentUser: AppUser | null } = useAuth();
   const [tag, setTag] = useState<string>("");
@@ -70,12 +72,32 @@ const UploadPost: React.FC<UploadPostProps> = ({
   const isGifOrVideoUploadRef = React.useRef<boolean>(false);
   const [showProgressBar, setShowProgressBar] = useState<boolean>(false);
   const userClickedPostRef = React.useRef<boolean>(false);
+  const uploadTaskRef = React.useRef<any>(null); // ✅ Store upload task reference
+  
 
   const router = useRouter();
   const notify = async (msg: string, opts?: NotifyOptions) => {
     const { toast } = await import("react-toastify");
     toast(msg, opts);
   };
+
+  useEffect(() => {
+    const cancelHandler = () => {
+      if (uploading && uploadTaskRef.current) {
+        uploadTaskRef.current.cancel();
+        setUploading(false);
+        setUploadProgress(0);
+        setShowProgressBar(false);
+        setIsPausedAt99(false);
+      }
+    };
+  
+    if (onCancelUpload) {
+      onCancelUpload(cancelHandler);
+    }
+  }, [uploading, onCancelUpload]);
+
+
 
   // Helper function to get general file type
   const getGeneralFileType = (mimeType: string): string => {
@@ -101,7 +123,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
       }
 
       img.onload = () => {
-        // Validate image dimensions before drawing
         if (img.width === 0 || img.height === 0) {
           reject(
             new Error("Image has invalid dimensions (width or height is 0)")
@@ -201,7 +222,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
   };
 
   const doUpload = async (isAnonymous: boolean): Promise<void> => {
-    // Prevent duplicate uploads
     if (uploading) {
       console.log("⚠️ Upload already in progress, skipping...");
       return;
@@ -246,13 +266,13 @@ const UploadPost: React.FC<UploadPostProps> = ({
 
       const storageRef = ref(storage, `memes/${memeId}`);
       const uploadTask = uploadBytesResumable(storageRef, uploadFile);
+      uploadTaskRef.current = uploadTask; // ✅ Store reference for cancellation
 
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           "state_changed",
           (snapshot) => {
             const pct = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            // Only cap at 99% for GIF/video uploads
             if (isGifOrVideoUploadRef.current) {
               setUploadProgress(Math.min(pct, 99));
             } else {
@@ -260,8 +280,14 @@ const UploadPost: React.FC<UploadPostProps> = ({
             }
           },
           (error) => {
-            console.error("❌ Upload error:", error);
-            reject(error);
+            // ✅ Handle cancellation
+            if (error.code === 'storage/canceled') {
+              console.log("🚫 Upload cancelled by user");
+              reject(new Error('Upload cancelled'));
+            } else {
+              console.error("❌ Upload error:", error);
+              reject(error);
+            }
           },
           async () => {
             try {
@@ -280,19 +306,16 @@ const UploadPost: React.FC<UploadPostProps> = ({
                 blurDataURL = await generateBlurData(imageUrl);
               }
 
-              // Only pause at 99% for GIF/video uploads if user hasn't clicked Post yet
               if (
                 isGifOrVideoUploadRef.current &&
                 !userClickedPostRef.current
               ) {
-                // Pause at 99% - wait for user confirmation before saving to Firestore
                 setUploadProgress(99);
                 setIsPausedAt99(true);
                 console.log(
                   "⏸️ Paused at 99% - waiting for user confirmation..."
                 );
 
-                // Wait for user to click "Confirm Post"
                 await new Promise<void>((continueResolve) => {
                   resumeUploadRef.current = continueResolve;
                 });
@@ -300,7 +323,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
                 console.log("▶️ User confirmed - saving to Firestore...");
                 setUploadProgress(100);
 
-                // Get fresh values from refs (updated during pause)
                 const finalTag = currentTagRef.current.trim() || "No tag";
                 const finalWallet = isAnonymous
                   ? "1nc1nerator11111111111111111111111111111111"
@@ -331,7 +353,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
                 isGifOrVideoUploadRef.current &&
                 userClickedPostRef.current
               ) {
-                // User clicked Post before 99%, skip pause and save immediately
                 console.log("▶️ User clicked early - saving immediately...");
                 setUploadProgress(100);
 
@@ -362,7 +383,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
                   memeData
                 );
               } else {
-                // For regular images, save immediately without pause
                 const memeData = {
                   id: userId,
                   username: finalUsername,
@@ -388,13 +408,12 @@ const UploadPost: React.FC<UploadPostProps> = ({
                 );
               }
 
-              // Reset form
               setTag("");
               setUploadProgress(100);
 
               setTimeout(() => {
                 toggleModel?.();
-                router.back(); // Close the modal
+                router.back();
                 setTimeout(() => {
                   router.push("/");
                 }, 100);
@@ -411,6 +430,11 @@ const UploadPost: React.FC<UploadPostProps> = ({
     } catch (error) {
       console.error("❌ Upload failed:", error);
 
+      // ✅ Don't show error toast if it was cancelled
+      if (error instanceof Error && error.message === 'Upload cancelled') {
+        return;
+      }
+
       let errorMessage = "Error uploading meme";
       if (error instanceof Error) {
         errorMessage = error.message;
@@ -420,6 +444,7 @@ const UploadPost: React.FC<UploadPostProps> = ({
     } finally {
       setUploading(false);
       setUploadProgress(0);
+      uploadTaskRef.current = null; // ✅ Clear reference
     }
   };
 
@@ -438,25 +463,20 @@ const UploadPost: React.FC<UploadPostProps> = ({
       return;
     }
 
-    // Show progress bar when user clicks Post
     setShowProgressBar(true);
     userClickedPostRef.current = true;
 
-    // If paused at 99%, resume the upload
     if (isPausedAt99 && resumeUploadRef.current) {
       console.log("▶️ User confirmed - resuming from 99%...");
       resumeUploadRef.current();
       return;
     }
 
-    // If already uploading (GIF/video background upload), just show progress
     if (uploading) {
       console.log("📊 Showing progress for ongoing background upload...");
-      // Upload will complete and save automatically since userClickedPostRef is now true
       return;
     }
 
-    // Check if this is a manual image upload
     if (imageUpload) {
       const isGif = imageUpload.type === "image/gif";
       const isVideo = imageUpload.type?.startsWith("video/");
@@ -467,7 +487,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
     doUpload(postAnonymously);
   };
 
-  // Handle pending upload after authentication
   useEffect(() => {
     if (currentUser && pendingUpload) {
       setAuthModalOpen(false);
@@ -476,7 +495,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
     }
   }, [currentUser, pendingUpload, postAnonymously]);
 
-  // Auto-upload when file is selected (only for GIFs and videos)
   useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
 
@@ -484,21 +502,18 @@ const UploadPost: React.FC<UploadPostProps> = ({
       const isGif = imageUpload.type === "image/gif";
       const isVideo = imageUpload.type?.startsWith("video/");
 
-      // Only auto-upload for GIFs and videos, not regular images
       if (isGif || isVideo) {
         console.log(
           `📤 ${
             isGif ? "GIF" : "Video"
           } detected, starting silent background upload...`
         );
-        isGifOrVideoUploadRef.current = true; // Mark as GIF/video upload
+        isGifOrVideoUploadRef.current = true;
         hasAutoUploadedRef.current = true;
-        userClickedPostRef.current = false; // Reset flag
-        setShowProgressBar(false); // Hide progress bar initially
+        userClickedPostRef.current = false;
+        setShowProgressBar(false);
 
-        // Start upload in background without showing progress
         if (!postAnonymously && !currentUser) {
-          // If not logged in and not anonymous, don't auto-upload
           console.log("⚠️ User not logged in, waiting for manual post...");
         } else {
           doUpload(postAnonymously);
@@ -506,7 +521,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
       }
     }
 
-    // Cleanup timeout on unmount or when dependencies change
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -519,7 +533,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
       setTag(canvasText);
       currentTagRef.current = canvasText;
 
-      // Auto-resize textarea
       setTimeout(() => {
         const tagTextarea = document.getElementById(
           "tag"
@@ -561,7 +574,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
 
   return (
     <div>
-      {/* Tag Input */}
       <div className="mb-4">
         <label htmlFor="tag" className="text-[#fff] text-[14px] block mb-1">
           Tag Meme (helps others find it){" "}
@@ -647,7 +659,6 @@ const UploadPost: React.FC<UploadPostProps> = ({
         </div>
       </div>
 
-      {/* Authentication Modal */}
       <Form
         buttonLabel="Submit"
         isOpen={isAuthModalOpen}
@@ -661,6 +672,23 @@ const UploadPost: React.FC<UploadPostProps> = ({
 };
 
 export default UploadPost;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // "use client";
 
