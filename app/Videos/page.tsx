@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   description: "Browse our collection of video memes",
 };
 
-// Skeleton component
+
 function VideoGridSkeleton() {
   return (
     <div className="min-h-screen py-8 pt-24">
       <div className="mb-6 container mx-auto px-4">
-        {/* Empty space for search bar */}
+
         <div className="h-12" />
       </div>
       
@@ -23,7 +23,7 @@ function VideoGridSkeleton() {
             <div key={i} className="w-full max-w-sm mx-auto">
               <div className="space-y-3">
                 <div className="relative w-full h-[320px] sm:h-[280px] md:h-[256px] bg-gradient-to-br from-[#1e3a4a] to-[#15242e] rounded-[19px] overflow-hidden">
-                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                  <div className="absolute inset-0 -translate-x-full animate-[shimmer_1s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                 </div>
                 
                 <div className="flex items-center justify-between px-2">

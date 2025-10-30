@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import SearchDropdown from './SearchEvents/SearchDropdown';
 import SearchSuggestions from './SearchEvents/SearchSuggestions';
-import type { SearchBy } from '@/lib/search-actions';
+// import type { SearchBy } from '@/lib/search-actions';
+import type { SearchBy } from "@/Types";
 
 interface StickyHeaderProps {
   searchQuery: string;
@@ -78,6 +79,8 @@ const StickyHeader: React.FC<StickyHeaderProps> = ({
               activeSuggestion={activeSuggestion}
               setActiveSuggestion={setActiveSuggestion}
               activeSort={activeSort}
+              setExactMatch={setExactMatch}  // ✅ Add this
+              setSearchBy={setSearchBy}      // ✅ Add this
             />
           )}
         </div>

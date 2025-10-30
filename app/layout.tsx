@@ -9,7 +9,7 @@ import { QueryProvider } from "@/AuthContext/QueryProvider";
 import { PriceProvider } from "@/context/ChonkPrice";
 import BottomBar from "@/components/BottomBar";
 import NextTopLoader from 'nextjs-toploader'; 
-import ConditionalTopLoader from "@/components/ConditionalTopLoader";
+
 
 
 export default function RootLayout({
@@ -22,7 +22,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${roboto.variable} ${montserrat.variable} ${alexandria.variable}`}>
       <body className="">
-        {/* <ConditionalTopLoader/> */}
+      <NextTopLoader
+        color="#86EFAC"
+        height={3}
+        showSpinner={false}
+        shadow="0 0 10px #86EFAC,0 0 5px #86EFAC"
+      />
         
         <QueryProvider>
           <WalletProvider>

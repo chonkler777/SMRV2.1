@@ -1,10 +1,10 @@
 export default function TransactionSkeleton() {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/60">
-      <div className="w-[90%] max-w-7xl 2xl:max-w-[1600px] h-[40vh] lg:h-[60vh] 2xl:h-[40vh] bg-[#0C1219] rounded-lg overflow-hidden border border-[#152D2D]">
+      <div className="w-[90%] max-w-7xl 2xl:max-w-[1600px] h-[40vh] lg:h-[45vh] 2xl:h-[26vh] bg-[#0C1219] rounded-lg overflow-hidden border border-[#152D2D]">
         <div className="relative py-6 max-h-[80vh] overflow-y-auto">
           {/* Sticky Header */}
-          <div className="flex mb-6 sticky top-0 left-0 bg-[#0C1219] z-20 w-full pb-3">
+          <div className="flex mb- sticky top-0 left-0 bg-[#0C1219] z-20 w-full pb-3">
             <div className="pl-6">
               <div className="h-6 w-40 bg-gradient-to-r from-[#1e3a4a]/60 to-[#15242e]/60 rounded-lg mb-1.5 animate-pulse" />
               <div className="flex flex-row items-baseline gap-2">
@@ -23,9 +23,9 @@ export default function TransactionSkeleton() {
           {/* Main Content */}
           <div className="px-6 md:flex gap-10 flex-nowrap">
             {/* Left Side - Meme Media */}
-            <div className="hidden md:flex flex-col w-[30%] gap-0">
+            <div className="hidden md:flex flex-col w-[25%] 2xl:w-[20%] gap-0">
               <div className="relative w-full mt-[26px] z-20 shadow-[0_3px_5px_rgba(0,96,57,0.5)]">
-                <div className="w-full h-[320px] bg-gradient-to-br from-[#1e3a4a] to-[#15242e] overflow-hidden">
+                <div className="w-full h-[200px] bg-gradient-to-br from-[#1e3a4a] to-[#15242e] overflow-hidden">
                   <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                 </div>
               </div>
@@ -33,13 +33,13 @@ export default function TransactionSkeleton() {
               {/* Earnings Badge */}
               <div className="flex justify-center w-full">
                 <div className="inline-flex items-center gap-2 px-5 py-1.5 -mt-[1px] bg-[#152D2D] rounded-b-[20px] animate-pulse">
-                  <div className="h-4 w-36 " />
+                  <div className="h-4 w-32 " />
                 </div>
               </div>
             </div>
 
             {/* Right Side - Transaction Table */}
-            <div className="w-full md:w-[70%] overflow-x-auto">
+            <div className="w-full md:w-[70%] 2xl:w-[80%] overflow-x-auto">
               <div className="max-h-[500px] overflow-y-auto shadow-[4px_4px_7px_rgba(0,0,0,0.4)]">
                 <table className="min-w-full">
                   <thead className="bg-transparent">
@@ -72,11 +72,11 @@ export default function TransactionSkeleton() {
                   </thead>
 
                   <tbody className="bg-[#202933]/40">
-                    {[...Array(4)].map((_, index) => (
+                    {[...Array(1)].map((_, index) => (
                       <tr
                         key={index}
                         className={`${
-                          index !== 3 ? "border-b border-[#C3C8CC]/10" : ""
+                          index !== 3 ? "" : ""
                         }`}
                       >
                         {/* Index */}

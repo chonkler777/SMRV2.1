@@ -422,7 +422,7 @@ export default function TransactionDetailClient({
 
 
                           {tip.username && tip.username !== "Anonymous" && (
-                            <div className="absolute font-semibold -mb-4 bottom-full left-0 px-2 py-1 bg-[#C3C8CC] text-[#25394E] text-[12px] 2xl:text-[16px] rounded-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                            <div className="absolute font-semibold -mb-4 bottom-full left-0 px-2 py-1 bg-[#C3C8CC] text-[#25394E] text-[12px] 2xl:text-[12px] rounded-[6px] opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
                               View {tip.username} posts
                               <div className="absolute top-full left-3 transform -translate-x-1/2 border-l-4 border-r-4 border-t-4 border-transparent border-t-[#C3C8CC]"></div>
                             </div>

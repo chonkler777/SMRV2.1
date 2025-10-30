@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PriceArrow from "@/public/assets/icons/PriceArrow";
 import TransactionPreview from "../TransactionEvents/TransactionsPreview";
 import { usePrice } from "@/context/ChonkPrice"; 
@@ -32,6 +33,7 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
   setSearchQuery, 
   wallet 
 }) => {
+  const router = useRouter();
   const [tips, setTips] = useState<Tip[]>([]);                  
   const [totalTips, setTotalTips] = useState<number>(0);
   const [displayedValue, setDisplayedValue] = useState<number>(0);
@@ -50,7 +52,13 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
 
   const hasEarnings = totalTips > 0;
 
-  // Load framer-motion dynamically
+  useEffect(() => {
+    if (docId) {
+      router.prefetch(`/TransactionsData/${docId}`);
+    }
+  }, [router, docId]);
+
+  
   useEffect(() => {
     import('framer-motion').then((mod) => {
       setMotion(() => mod.motion);
@@ -157,6 +165,10 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
     }
   };
 
+  const handleViewTransactions = () => {
+    router.push(`/TransactionsData/${docId}`, { scroll: false });
+  };
+
   return (
     <div className="py- text-center">
       <div className="relative inline-block">
@@ -240,16 +252,15 @@ const EarningsDisplay: React.FC<EarningsDisplayProps> = ({
           >
             <TransactionPreview docId={docId} setSearchQuery={setSearchQuery} />
             <div className="w-full px-4 py-2 text-[12px] text-[#86EFAC]/80 transition duration-100 border-t border-[#364097]">
-              <Link 
-                scroll={false}
-                href={`/TransactionsData/${docId}`}
+              <button 
+                onClick={handleViewTransactions}
                 className="w-full block"
               >
                 <span className="px-3 py-1.5 inline-flex shadow-[-3px_3px_10px_rgba(12,18,25,0.7)] flex-row font-Roboto gap-1 justify-center items-center bg-[#0C1219B2]/80 hover:bg-[#0C1219] transition duration-100 rounded-[6px] cursor-pointer w-full">
                   <TransactionsIcon/>
                   View Transactions
                 </span>
-              </Link>
+              </button>
             </div>
           </div>
         )}

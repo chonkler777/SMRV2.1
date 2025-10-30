@@ -12,6 +12,7 @@ import SearchDropdown from "@/components/SearchEvents/SearchDropdown";
 import SearchIcon from "@/public/assets/icons/SearchIcon";
 import { useUsernameSearch } from "@/hooks/useUsernameSearch";
 import BackToTopButton from "@/components/BacktoTopButton";
+import SearchFilterButtons from "@/components/SearchEvents/SearchFilterButtons";
 
 interface GifsClientProps {
   initialMemes: Meme[];
@@ -184,6 +185,17 @@ export default function GifsClient({
           </div>
         )}
       </div>
+
+      {isSearchActive && (
+        <div className="block lg:hidden">
+          <SearchFilterButtons
+            searchBy={searchBy}
+            setSearchBy={setSearchBy}
+            exactMatch={exactMatch}
+            setExactMatch={setExactMatch}
+          />
+        </div>
+      )}
 
 
       <div className="mx-3 lg:mx-8 px-4">

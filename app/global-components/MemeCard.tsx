@@ -182,7 +182,7 @@ const MemeCard = memo(({ meme, setSearchQuery, setSearchBy, currentUser, index =
       >
         <div 
           ref={tagContainerRef}
-          className='bg-[#202A53] py-1 px-2 z-20 absolute rounded-[8px] text-[#7FB4FA] font-roboto text-[12px] w-full'
+          className='bg-[#19233D] cursor-pointer hover:bg-[#202A53] py-1 px-2 z-20 absolute rounded-[8px] text-[#7FB4FA] font-roboto text-[12px] w-full'
         >
           <span 
             ref={tagTextRef}

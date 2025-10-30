@@ -177,6 +177,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
   const handleSuggestionClick = useCallback((suggestion: string) => {
     setSearchQuery(suggestion);
     setShowSuggestionsDropdown(false);
+    setExactMatch(true);  
     inputRef.current?.blur();
   }, [setSearchQuery]);
 
@@ -233,7 +234,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
               </button>
             </div>
 
-            {/* ✅ Regular input - no Framer Motion needed here! */}
+
             <input
               ref={inputRef}
               type="text"

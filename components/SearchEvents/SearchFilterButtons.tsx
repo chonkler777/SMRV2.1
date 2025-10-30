@@ -6,8 +6,8 @@ import type { SearchBy } from "@/lib/search-actions";
 interface SearchFilterButtonsProps {
   searchBy: SearchBy;
   setSearchBy: (searchBy: SearchBy) => void;
-  exactMatch: boolean;  // ✅ Add this
-  setExactMatch: (exactMatch: boolean) => void;  // ✅ Add this
+  exactMatch: boolean;
+  setExactMatch: (exactMatch: boolean) => void;
   className?: string;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "compact" | "pills";
@@ -17,8 +17,8 @@ interface SearchFilterButtonsProps {
 const SearchFilterButtons: React.FC<SearchFilterButtonsProps> = ({
   searchBy,
   setSearchBy,
-  exactMatch,  // ✅ Add this
-  setExactMatch,  // ✅ Add this
+  exactMatch,
+  setExactMatch,
   className = "",
   size = "md",
   variant = "default",
@@ -67,7 +67,7 @@ const SearchFilterButtons: React.FC<SearchFilterButtonsProps> = ({
   ];
 
   return (
-    <div className={`flex items-center justify-center gap-4 2xl:gap-5 ${className}`}>
+    <div className={`flex flex-col lg:flex-row lg:items-center lg:justify-center gap-3 lg:gap-4 2xl:gap-5 px-4 lg:px-0 ${className}`}>
       {/* Filter Buttons */}
       <div className="flex gap-4 2xl:gap-5">
         {buttons.map(({ key, label }) => (
@@ -76,7 +76,7 @@ const SearchFilterButtons: React.FC<SearchFilterButtonsProps> = ({
             onClick={() => setSearchBy(key)}
             className={`px-4 py-1.5 cursor-pointer 2xl:px-6 2xl:py-2 rounded-full lg:rounded-none lg:rounded-b-[12px] text-[15px] transition duration-300 ${
               searchBy === key
-                ? "bg-[#152D2D] border-x border-b border-b-[#86EFAC] border-x-[#86EFAC] text-white"
+                ? "bg-[#152D2D] border border-[#86EFAC] lg:border-x lg:border-b lg:border-b-[#86EFAC] lg:border-x-[#86EFAC] text-white"
                 : " border-[#C1C9C9] border-0 bg-[#152D2D] hover:bg-[#152D2D]/70 text-[#C3C8CC]"
             }`}
             type="button"
@@ -86,8 +86,8 @@ const SearchFilterButtons: React.FC<SearchFilterButtonsProps> = ({
         ))}
       </div>
 
-
-      <div className="flex items-center gap-2 ml-4 whitespace-nowrap">
+      {/* Exact Match Checkbox - New row on mobile, same row on desktop */}
+      <div className="flex items-center gap-2 lg:ml-4 whitespace-nowrap">
         <label className="flex items-center gap-2 cursor-pointer text-[15px] text-[#C3C8CC]">
           <input
             type="checkbox"
@@ -107,7 +107,6 @@ const SearchFilterButtons: React.FC<SearchFilterButtonsProps> = ({
 };
 
 export default SearchFilterButtons;
-
 
 
 

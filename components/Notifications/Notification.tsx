@@ -69,6 +69,7 @@ const MemeThumbnail: React.FC<{
 };
 
 const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -86,7 +87,8 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
   const unsubscribeLikesRef = useRef<Unsubscribe | null>(null);
   const initialLoadRef = useRef(false);
   const isDropdownOpenRef = useRef(false);
-  const router = useRouter();
+  const prefetchedMemeIds = useRef<Set<string>>(new Set());
+ 
 
   useEffect(() => {
     if (
@@ -97,6 +99,23 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
       Notification.requestPermission();
     }
   }, []);
+
+
+  useEffect(() => {
+    notifications.forEach((notification) => {
+      if (!prefetchedMemeIds.current.has(notification.memeId)) {
+        if (notification.type === "like") {
+          router.prefetch(`/Meme/${notification.memeId}`);
+        } else {
+          router.prefetch(`/TransactionsData/${notification.memeId}`);
+        }
+        prefetchedMemeIds.current.add(notification.memeId);
+      }
+    });
+  }, [notifications, router]);
+
+
+
 
   useEffect(() => {
     if (!currentUser) {
@@ -395,6 +414,14 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
       console.error("Error marking notification as clicked:", error);
       setServerClickedNotifications(serverClickedNotifications);
     }
+
+    // ✅ Navigate using router.push
+    const targetUrl =
+      notification.type === "like"
+        ? `/Meme/${notification.memeId}`
+        : `/TransactionsData/${notification.memeId}`;
+
+    router.push(targetUrl, { scroll: false });
   };
 
   const formatUsdAmount = (solAmount: number, priceAtSend: number): string => {
@@ -520,13 +547,7 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
                   key={`${notification.id}-${idx}`}
                   className="border-b border-gray-700 last:border-b-0"
                 >
-                  <Link
-                    scroll={false}
-                    href={
-                      notification.type === "like"
-                        ? `/Meme/${notification.memeId}`
-                        : `/TransactionsData/${notification.memeId}`
-                    }
+                  <button
                     onClick={() => handleNotificationClick(notification)}
                     className={`block w-full text-left p-3 text-sm text-gray-200 cursor-pointer hover:bg-blue-500/5 relative ${
                       !isNotificationClicked(notification)
@@ -539,7 +560,7 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
                     )}
 
                     {renderNotificationContent(notification)}
-                  </Link>
+                  </button>
                 </li>
               ))}
 
@@ -571,3 +592,7 @@ const Notifications: React.FC<NotificationsProps> = ({ currentUser }) => {
 };
 
 export default Notifications;
+
+
+
+
